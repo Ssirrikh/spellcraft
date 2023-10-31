@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset = 'utf-8'>
+	<title>Spellform Dev</title>
+	<style>
+		* {
+			margin: 0px;
+			padding: 0px;
+			box-sizing: border-box;
+		}
+		body {
+			background-color: #000000;
+		}
+	</style>
+</head>
+<body>
+
+<script type = 'text/javascript' src = 'script/sprite.js'></script>
+
+<script>
+	const t0 = Date.now();
+
+    let runeset = new Spritesheet(
+        'source/runeset-00-blue.png',
+        12, 12,
+        () => {
+            console.log('spritesheet loaded in ' + (Date.now()-t0) + 'ms');
+
+            for (let i = 0; i < runeset.numSprites; i++) {
+                document.body.appendChild(runeset.getSprite(i));
+            }
+
+            document.body.appendChild(document.createElement('br'));
+            document.body.appendChild(document.createElement('br'));
+
+            let test0 = new Image();
+            test0.src = runeset.getSprite(12).src;
+            test0.onload = () => document.body.appendChild(test0);
+            
+            let test1 = new Image();
+            test1.src = runeset.getSprite(2,4).src;
+            test1.onload = () => document.body.appendChild(test1);
+        }
+    );
+</script>
+
+</body>
+</html>
