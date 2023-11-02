@@ -12,6 +12,24 @@
 		body {
 			background-color: #000000;
 		}
+        .Ring {
+            background-color: transparent;
+            border: 1px solid #ffffff;
+            border-radius: 50%;
+
+            position: absolute;
+            width: 50px;
+            height: 50px;
+        }
+        .Line {
+            background-color: #ffffff;
+            border-radius: 50%;
+
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            transform-origin: 0% 50%;
+        }
 	</style>
 </head>
 <body>
@@ -20,6 +38,80 @@
 
 <script>
 	const t0 = Date.now();
+
+    class Ring {
+        constructor (radius = 50, lineWidth = 1, color = '#ffffff') {
+            this.domElement = document.createElement('div');
+            this.domElement.classList.add('Ring');
+            this.radius = radius;
+            this.lineWidth = lineWidth;
+            this.color = color;
+        }
+        get radius () { return parseFloat(this.domElement.style.width) / 2; }
+        set radius (r) { this.domElement.style.width = this.domElement.style.height = (2*r) + 'px'; }
+        get lineWidth () { return parseFloat(this.domElement.style.borderWidth); }
+        set lineWidth (lw) { this.domElement.style.borderWidth = lw + 'px'; }
+        get color () {
+            // https://stackoverflow.com/a/13070198
+            const rgb = this.domElement.style.borderColor.split('(')[1].split(')')[0].split(','); // "rbg(r,g,b)" -> [r,g,b]
+            const hex = rgb.map(x => parseInt(x).toString(16));
+            return '0x' + hex.map(x => (x.length==1) ? '0'+x : x).join('');
+        }
+        set color (c) { this.domElement.style.borderColor = c; }
+    }
+    class Line {
+        constructor (lineWidth = 1, color = '#ffffff') {
+            this.domElement = document.createElement('div');
+            this.domElement.classList.add('Line');
+            this.lineWidth = lineWidth;
+            this.color = color;
+        }
+        get lineWidth () { return parseFloat(this.domElement.style.height); }
+        set lineWidth (lw) { this.domElement.style.height = lw + 'px'; }
+        get color () {
+            // https://stackoverflow.com/a/13070198
+            const rgb = this.domElement.style.backgroundColor.split('(')[1].split(')')[0].split(','); // "rbg(r,g,b)" -> [r,g,b]
+            const hex = rgb.map(x => parseInt(x).toString(16));
+            return '0x' + hex.map(x => (x.length==1) ? '0'+x : x).join('');
+        }
+        set color (c) { this.domElement.style.backgroundColor = c; }
+        from (a = [0,0], b) {
+            const [sx,sy] = (b===undefined) ? a : [a,b];
+            this.domElement.style.left = sx + 'px';
+            this.domElement.style.top = sy + 'px';
+            return this;
+        }
+        to (a = [100,100], b) {
+            const [sx,sy] = [parseInt(this.domElement.style.left),parseInt(this.domElement.style.top)];
+            const [ex,ey] = (b===undefined) ? a : [a,b];
+            const [dx,dy] = [ex-sx,ey-sy];
+            const length = Math.sqrt(dx*dx + dy*dy);
+            const angle = Math.atan2(dy,dx);
+            this.domElement.style.width = length + 'px';
+            this.domElement.style.transform = 'rotate('+angle+'rad)';
+        }
+    }
+    // class Centerform {
+    //     constructor (order = 3) {
+    //         //
+    //     }
+    // }
+    // class Spellform {
+    //     constructor () {
+    //         //
+    //     }
+    // }
+
+    let testRing = new Ring(200,2,'#00ff00');
+    document.body.appendChild(testRing.domElement);
+
+    let testLine = new Line(2,'#00ff00');
+    document.body.appendChild(testLine.domElement);
+    testLine.from(50,50).to(75,100);
+
+    let testLine2 = new Line(3);
+    document.body.appendChild(testLine2.domElement);
+    testLine2.from(75,100);
 
     let runeset = new Spritesheet(
         'source/runeset-00-blue.png',
