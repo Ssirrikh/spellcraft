@@ -30,6 +30,16 @@
             height: 2px;
             transform-origin: 0% 50%;
         }
+        .Centerform {
+            background-color: transparent;
+            border: 1px solid #ffffff;
+            border-radius: 50%;
+
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            transform-origin: 50% 50%;
+        }
 	</style>
 </head>
 <body>
@@ -94,27 +104,54 @@
             this.domElement.classList.add('Centerform');
             this.lines = [];
 
-            const dTheta = 2*Math.PI / this.order;
-            for (let i = 0; i < this.order; i++) {
-                const sx = radius * Math.cos(i*dTheta);
-                const sy = radius * Math.sin(i*dTheta);
-                let l = new Line();
-                l.from(sx,sy);
-                this.domElement.appendChild(l);
-                this.lines.push(l);
-            }
-
-            this.order = order;
+            this.props = {
+                radius: radius,
+                order: order,
+                lineWidth: lineWidth,
+                color: color
+            };
             this.radius = radius;
-            this.lineWidth = lineWidth;
-            this.color = color;
+            this.order = order;
+            // lineWidth and color are automatically applied whenever order is set/changed
+
         }
-        get radius () { return parseFloat(this.domElement.style.width) / 2; }
-        set radius (r) { this.domElement.style.width = this.domElement.style.height = (2*r) + 'px'; }
-        get lineWidth () { return this.lines[0].lineWidth; }
-        set lineWidth (lw) { for (let line of this.lines) line.lineWidth = lw; }
-        get color () { return this.lines[0].color; }
-        set color (c) { for (let line of this.lines) line.color = c; }
+        get radius () { return this.props.radius; }
+        set radius (r) {
+            this.props.radius = r;
+            this.domElement.style.width = this.domElement.style.height = (2*r) + 'px';
+        }
+        get lineWidth () { return this.props.lineWidth; }
+        set lineWidth (lw) {
+            this.props.lineWidth = lw;
+            for (let line of this.lines) line.lineWidth = lw;
+        }
+        get color () { return this.props.color; }
+        set color (c) {
+            this.props.color = c;
+            for (let line of this.lines) line.color = c;
+        }
+        get order () { return this.props.order; }
+        set order (n) {
+            for (let line of this.lines) this.domElement.removeChild(line.domElement);
+            this.lines = [];
+
+            const r = this.radius;
+            const offset = -Math.PI / 2;
+            const dTheta = (n%2 == 0) ? (2*Math.PI / n) : (2 * 2*Math.PI / n);
+            for (let i = 0; i < n; i++) {
+                const sx = r + r*Math.cos(i*dTheta + offset);
+                const sy = r + r*Math.sin(i*dTheta + offset);
+                const ex = r + r*Math.cos((i+1)*dTheta + offset);
+                const ey = r + r*Math.sin((i+1)*dTheta + offset);
+                let line = new Line();
+                line.from(sx,sy).to(ex,ey);
+                this.domElement.appendChild(line.domElement);
+                this.lines.push(line);
+            }
+            // need to reapply properties to new sub-elems
+            this.lineWidth = this.lineWidth;
+            this.color = this.color;
+        }
     }
     // class Spellform {
     //     constructor () {
@@ -124,6 +161,7 @@
 
     let testRing = new Ring(200,2,'#00ff00');
     document.body.appendChild(testRing.domElement);
+    testRing.domElement.style.left = '200px';
 
     let testLine = new Line(2,'#00ff00');
     document.body.appendChild(testLine.domElement);
@@ -132,6 +170,9 @@
     let testLine2 = new Line(3);
     document.body.appendChild(testLine2.domElement);
     testLine2.from(75,100);
+
+    let testCenter = new Centerform(50,5, 2,'#00ff00');
+    document.body.appendChild(testCenter.domElement);
 
     let runeset = new Spritesheet(
         'source/runeset-00-blue.png',
