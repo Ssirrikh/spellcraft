@@ -39,6 +39,13 @@
 <script>
 	const t0 = Date.now();
 
+    const rgb2hex = (c) => {
+        // https://stackoverflow.com/a/13070198
+        const rgb = c.split('(')[1].split(')')[0].split(','); // "rbg(r,g,b)" -> [r,g,b]
+        const hex = rgb.map(x => parseInt(x).toString(16));
+        return '0x' + hex.map(x => (x.length==1) ? '0'+x : x).join('');
+    }
+
     class Ring {
         constructor (radius = 50, lineWidth = 1, color = '#ffffff') {
             this.domElement = document.createElement('div');
@@ -51,12 +58,7 @@
         set radius (r) { this.domElement.style.width = this.domElement.style.height = (2*r) + 'px'; }
         get lineWidth () { return parseFloat(this.domElement.style.borderWidth); }
         set lineWidth (lw) { this.domElement.style.borderWidth = lw + 'px'; }
-        get color () {
-            // https://stackoverflow.com/a/13070198
-            const rgb = this.domElement.style.borderColor.split('(')[1].split(')')[0].split(','); // "rbg(r,g,b)" -> [r,g,b]
-            const hex = rgb.map(x => parseInt(x).toString(16));
-            return '0x' + hex.map(x => (x.length==1) ? '0'+x : x).join('');
-        }
+        get color () { return rgb2hex(this.domElement.style.borderColor); }
         set color (c) { this.domElement.style.borderColor = c; }
     }
     class Line {
@@ -68,12 +70,7 @@
         }
         get lineWidth () { return parseFloat(this.domElement.style.height); }
         set lineWidth (lw) { this.domElement.style.height = lw + 'px'; }
-        get color () {
-            // https://stackoverflow.com/a/13070198
-            const rgb = this.domElement.style.backgroundColor.split('(')[1].split(')')[0].split(','); // "rbg(r,g,b)" -> [r,g,b]
-            const hex = rgb.map(x => parseInt(x).toString(16));
-            return '0x' + hex.map(x => (x.length==1) ? '0'+x : x).join('');
-        }
+        get color () { return rgb2hex(this.domElement.style.borderColor); }
         set color (c) { this.domElement.style.backgroundColor = c; }
         from (a = [0,0], b) {
             const [sx,sy] = (b===undefined) ? a : [a,b];
@@ -91,11 +88,34 @@
             this.domElement.style.transform = 'rotate('+angle+'rad)';
         }
     }
-    // class Centerform {
-    //     constructor (order = 3) {
-    //         //
-    //     }
-    // }
+    class Centerform {
+        constructor (radius = 50, order = 3, lineWidth = 1, color = '#ffffff') {
+            this.domElement = document.createElement('div');
+            this.domElement.classList.add('Centerform');
+            this.lines = [];
+
+            const dTheta = 2*Math.PI / this.order;
+            for (let i = 0; i < this.order; i++) {
+                const sx = radius * Math.cos(i*dTheta);
+                const sy = radius * Math.sin(i*dTheta);
+                let l = new Line();
+                l.from(sx,sy);
+                this.domElement.appendChild(l);
+                this.lines.push(l);
+            }
+
+            this.order = order;
+            this.radius = radius;
+            this.lineWidth = lineWidth;
+            this.color = color;
+        }
+        get radius () { return parseFloat(this.domElement.style.width) / 2; }
+        set radius (r) { this.domElement.style.width = this.domElement.style.height = (2*r) + 'px'; }
+        get lineWidth () { return this.lines[0].lineWidth; }
+        set lineWidth (lw) { for (let line of this.lines) line.lineWidth = lw; }
+        get color () { return this.lines[0].color; }
+        set color (c) { for (let line of this.lines) line.color = c; }
+    }
     // class Spellform {
     //     constructor () {
     //         //
